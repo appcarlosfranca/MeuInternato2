@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Minha Escala — Rodízio de Pediatria</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --bg-soft: #111a2b;
+      --surface: rgba(17, 24, 39, 0.88);
+      --surface-2: rgba(22, 31, 50, 0.96);
+      --surface-3: rgba(33, 46, 73, 0.98);
+      --surface-4: rgba(11, 18, 32, 0.78);
+      --text: #eef3ff;
+      --muted: #99a7c2;
+      --line: rgba(148, 163, 184, 0.20);
+      --accent: #68e1fd;
+      --accent-2: #a78bfa;
+      --accent-3: #34d399;
+      --accent-4: #fbbf24;
+      --success: #4ade80;
+      --danger: #fb7185;
+      --warning: #facc15;
+      --shadow: 0 30px 60px rgba(2, 6, 23, 0.35);
+      --radius: 24px;
+      --radius-sm: 16px;
+      --radius-xs: 12px;
+    }
+
+    html[data-theme="mono"] {
+      --bg: #f5f6f8;
+      --bg-soft: #eceef2;
+      --surface: rgba(255,255,255,0.92);
+      --surface-2: rgba(255,255,255,0.98);
+      --surface-3: rgba(243,244,246,0.98);
+      --surface-4: rgba(250,250,250,0.90);
+      --text: #111827;
+      --muted: #5b6474;
+      --line: rgba(17, 24, 39, 0.12);
+      --accent: #111827;
+      --accent-2: #374151;
+      --accent-3: #6b7280;
+      --accent-4: #9ca3af;
+      --success: #166534;
+      --danger: #be123c;
+      --warning: #a16207;
+      --shadow: 0 22px 50px rgba(15, 23, 42, 0.08);
+    }
+
+    html[data-theme="pastel"] {
+      --bg: #f7f4ff;
+      --bg-soft: #f3efff;
+      --surface: rgba(255,255,255,0.94);
+      --surface-2: rgba(255,252,255,0.98);
+      --surface-3: rgba(242,237,255,0.98);
+      --surface-4: rgba(248,244,255,0.92);
+      --text: #2e2948;
+      --muted: #786d99;
+      --line: rgba(139, 120, 198, 0.18);
+      --accent: #8b78c6;
+      --accent-2: #77b7b0;
+      --accent-3: #d889a8;
+      --accent-4: #f2b84b;
+      --success: #4c9b76;
+      --danger: #c7606f;
+      --warning: #b28b3e;
+      --shadow: 0 22px 50px rgba(86, 64, 120, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 20%, transparent) 0, transparent 24%),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--accent-2) 20%, transparent) 0, transparent 28%),
+        linear-gradient(180deg, color-mix(in srgb, var(--bg) 94%, black) 0%, var(--bg-soft) 100%);
+      background-attachment: fixed;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.45), transparent 86%);
+      opacity: .22;
+    }
+
+    button, select, input, textarea { font: inherit; }
+    button { color: inherit; }
+
+    .app-shell {
+      width: min(1600px, 100%);
+      margin: 0 auto;
+      padding: 18px clamp(14px, 2.5vw, 36px) 60px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 0 18px;
+      background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 86%, transparent) 0%, transparent 100%);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      letter-spacing: -.06em;
+      color: #07111f;
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent-2) 60%, white));
+      box-shadow: var(--shadow);
+      flex: 0 0 auto;
+    }
+
+    .brand-title { font-size: clamp(1.06rem, 2vw, 1.38rem); font-weight: 900; letter-spacing: -.03em; }
+    .brand-subtitle { font-size: .84rem; color: var(--muted); margin-top: 2px; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn, .select-wrap select {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 14px;
+      min-height: 44px;
+      padding: 0 14px;
+      cursor: pointer;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .btn:hover, .select-wrap select:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+      box-shadow: 0 12px 24px rgba(2, 6, 23, 0.14);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent-2) 45%, var(--accent)));
+      color: #07111f;
+      border-color: transparent;
+      font-weight: 900;
+    }
+
+    .btn.ghost {
+      background: color-mix(in srgb, var(--surface) 50%, transparent);
+    }
+
+    .btn.danger {
+      color: var(--danger);
+      border-color: color-mix(in srgb, var(--danger) 50%, var(--line));
+    }
+
+    .btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .select-wrap { position: relative; }
+    .select-wrap select { appearance: none; padding-right: 34px; }
+    .select-wrap::after {
+      content: "⌄";
+      position: absolute;
+      right: 12px;
+      top: 8px;
+      pointer-events: none;
+      color: var(--muted);
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card, .panel, dialog {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(22px);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 92px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .profile-card {
+      padding: 22px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .profile-card::after {
+      content: "";
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      right: -100px;
+      top: -70px;
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      filter: blur(8px);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-size: .72rem;
+      font-weight: 900;
+      color: var(--accent);
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 0 6px color-mix(in srgb, currentColor 18%, transparent);
+    }
+
+    h1 {
+      margin: 12px 0 10px;
+      font-size: clamp(1.9rem, 3vw, 2.6rem);
+      line-height: .95;
+      letter-spacing: -.05em;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: .95rem;
+    }
+
+    .info-stack {
+      margin-top: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .info-chip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+      font-size: .9rem;
+    }
+
+    .info-chip strong { font-size: 1rem; }
+    .muted { color: var(--muted); }
+
+    .summary-card { padding: 20px; }
+    .summary-title { font-size: 1rem; font-weight: 900; margin-bottom: 12px; }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.35rem;
+      letter-spacing: -.04em;
+      margin-bottom: 4px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: .75rem;
+      line-height: 1.35;
+      display: block;
+    }
+
+    .progress-wrap { margin-top: 14px; }
+    .small { font-size: .8rem; color: var(--muted); }
+    .progress-track {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-3) 82%, transparent);
+      margin-top: 8px;
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-3));
+      transition: width .22s ease;
+    }
+
+    .summary-note {
+      margin-top: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: .8rem;
+    }
+
+    .actions-card, .legend-card {
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .actions-grid { display: grid; gap: 8px; }
+
+    .legend-list {
+      display: grid;
+      gap: 9px;
+      color: var(--muted);
+      font-size: .84rem;
+    }
+
+    .legend-list span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      display: inline-block;
+      background: var(--line);
+    }
+
+    .dot.present { background: var(--success); }
+    .dot.absent { background: var(--danger); }
+    .dot.pending { background: var(--warning); }
+    .dot.signed { border-radius: 4px; background: var(--accent); }
+
+    .content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .spotlight {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(300px, .95fr);
+      gap: 16px;
+      align-items: stretch;
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--surface-2) 88%, transparent), color-mix(in srgb, var(--surface-3) 88%, transparent));
+    }
+
+    .spotlight-main h2 {
+      margin: 8px 0 8px;
+      font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+      line-height: .98;
+      letter-spacing: -.04em;
+    }
+
+    .spotlight-main p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-2) 62%, transparent);
+      font-size: .82rem;
+    }
+
+    .focus-card {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-4) 88%, transparent);
+    }
+
+    .focus-block {
+      border-radius: 16px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-2) 64%, transparent);
+    }
+
+    .focus-block strong {
+      display: block;
+      font-size: .76rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .focus-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .week-nav {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: thin;
+    }
+
+    .week-tab {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: all .16s ease;
+    }
+
+    .week-tab.active {
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 25%, var(--surface-2)), color-mix(in srgb, var(--accent-2) 18%, var(--surface-2)));
+      color: var(--text);
+      border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+      font-weight: 900;
+    }
+
+    .weeks-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .week-section.is-hidden { display: none; }
+
+    .week-panel {
+      padding: 18px;
+      background: color-mix(in srgb, var(--surface) 84%, transparent);
+    }
+
+    .week-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 16px;
+    }
+
+    .week-head h3 {
+      margin: 8px 0 0;
+      font-size: clamp(1.25rem, 2.6vw, 1.8rem);
+      letter-spacing: -.03em;
+    }
+
+    .week-total {
+      color: var(--muted);
+      font-size: .92rem;
+      text-align: right;
+    }
+
+    .day-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .day-row {
+      display: grid;
+      grid-template-columns: 120px minmax(0, 1fr);
+      gap: 12px;
+      align-items: stretch;
+      padding: 12px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+      transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+    }
+
+    .day-row:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+      box-shadow: 0 16px 34px rgba(2, 6, 23, .16);
+    }
+
+    .day-row.today {
+      border-color: color-mix(in srgb, var(--accent) 68%, var(--line));
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 16%, transparent);
+    }
+
+    .day-row.complete {
+      background: color-mix(in srgb, var(--success) 10%, var(--surface-2));
+    }
+
+    .day-meta {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--surface-4) 88%, transparent);
+      border: 1px solid var(--line);
+    }
+
+    .day-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: fit-content;
+      min-width: 68px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 30%, var(--surface-3)), color-mix(in srgb, var(--accent-2) 18%, var(--surface-3)));
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: -.03em;
+    }
+
+    .day-name {
+      font-size: .77rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .day-hours {
+      font-size: .8rem;
+      color: var(--muted);
+    }
+
+    .day-main {
+      display: grid;
+      gap: 12px;
+    }
+
+    .day-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mini-btn, .icon-btn {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: .75rem;
+      transition: all .16s ease;
+    }
+
+    .mini-btn:hover, .icon-btn:hover {
+      color: var(--text);
+      border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+      background: color-mix(in srgb, var(--surface-3) 55%, transparent);
+    }
+
+    .shift-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+      gap: 10px;
+    }
+
+    .shift-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--surface) 68%, transparent);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .14s ease, border-color .14s ease, background .14s ease;
+    }
+
+    .shift-card:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+    }
+
+    .shift-card[data-status="present"] {
+      border-color: color-mix(in srgb, var(--success) 58%, var(--line));
+      background: color-mix(in srgb, var(--success) 10%, var(--surface));
+    }
+
+    .shift-card[data-status="absent"] {
+      border-color: color-mix(in srgb, var(--danger) 58%, var(--line));
+      background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+    }
+
+    .shift-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .shift-label {
+      font-size: .72rem;
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .10em;
+      margin-bottom: 4px;
+    }
+
+    .shift-place {
+      font-weight: 900;
+      line-height: 1.3;
+      letter-spacing: -.02em;
+    }
+
+    .shift-time {
+      color: var(--muted);
+      font-size: .72rem;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface-3) 72%, transparent);
+      font-size: .72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .status-badge.present { color: var(--success); }
+    .status-badge.absent { color: var(--danger); }
+
+    .signature {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: .74rem;
+      cursor: pointer;
+    }
+
+    .signature input {
+      accent-color: var(--accent);
+      width: 16px;
+      height: 16px;
+    }
+
+    .shift-footer { display: flex; gap: 8px; }
+    .icon-btn { flex: 1; }
+
+    .free-day {
+      display: grid;
+      place-items: center;
+      min-height: 108px;
+      padding: 14px;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      color: var(--muted);
+      text-align: center;
+      background: color-mix(in srgb, var(--surface-4) 60%, transparent);
+    }
+
+    .free-day strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .footer {
+      margin-top: 28px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.7;
+    }
+
+    dialog {
+      width: min(560px, calc(100% - 24px));
+      padding: 0;
+      color: var(--text);
+    }
+
+    dialog::backdrop {
+      background: rgba(2, 6, 23, 0.62);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-body { padding: 20px; }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 16px 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: .8rem;
+      font-weight: 900;
+    }
+
+    .field textarea {
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: var(--surface-2);
+      color: var(--text);
+      outline: none;
+    }
+
+    .field textarea:focus {
+      border-color: color-mix(in srgb, var(--accent) 65%, var(--line));
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translate(-50%, 20px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: .82rem;
+      font-weight: 900;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 90;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 1180px) {
+      .dashboard { grid-template-columns: 1fr; }
+      .sidebar { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .profile-card, .summary-card { grid-column: span 2; }
+    }
+
+    @media (max-width: 900px) {
+      .spotlight { grid-template-columns: 1fr; }
+      .day-row { grid-template-columns: 1fr; }
+      .day-meta { flex-direction: row; align-items: center; }
+    }
+
+    @media (max-width: 720px) {
+      .topbar { position: static; display: grid; }
+      .toolbar { justify-content: flex-start; }
+      .sidebar { grid-template-columns: 1fr; }
+      .profile-card, .summary-card { grid-column: auto; }
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .shift-grid { grid-template-columns: 1fr; }
+      .focus-actions, .day-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 520px) {
+      .app-shell { padding-inline: 10px; }
+      .toolbar .btn, .toolbar .select-wrap { flex: 1 1 auto; }
+      .select-wrap select { width: 100%; }
+      .focus-actions, .day-actions { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+      .day-meta { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media print {
+      :root, html[data-theme="mono"], html[data-theme="pastel"] {
+        --bg: #fff;
+        --bg-soft: #fff;
+        --surface: #fff;
+        --surface-2: #fff;
+        --surface-3: #f5f5f5;
+        --surface-4: #fff;
+        --text: #000;
+        --muted: #555;
+        --line: #c9c9c9;
+        --accent: #000;
+        --accent-2: #000;
+        --accent-3: #000;
+        --success: #146c43;
+        --danger: #a51d2d;
+        --warning: #806000;
+        --shadow: none;
+      }
+
+      body, body::before { background: #fff !important; }
+      .topbar, .actions-card, .legend-card, .toast, .modal-actions, .day-actions, .toolbar { display: none !important; }
+      .app-shell { width: 100%; padding: 0; }
+      .dashboard { display: block; }
+      .sidebar { position: static; display: block; margin-bottom: 12px; }
+      .profile-card, .summary-card, .week-panel, .spotlight { box-shadow: none; backdrop-filter: none; }
+      .spotlight { grid-template-columns: 1fr; padding: 14px; }
+      .week-section { break-before: page; }
+      .week-section:first-of-type { break-before: auto; }
+      .day-row { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">CF</div>
+        <div>
+          <div class="brand-title">Minha Escala de Pediatria</div>
+          <div class="brand-subtitle">Carlos França • Internato • Grupo 2A / 2A-2</div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="select-wrap">
+          <select id="themeSelect" aria-label="Selecionar tema">
+            <option value="black">Noite clínica</option>
+            <option value="mono">Monocromático</option>
+            <option value="pastel">Pastel</option>
+          </select>
+        </div>
+        <button class="btn" id="exportBtn" type="button">Exportar backup</button>
+        <button class="btn" id="importBtn" type="button">Importar</button>
+        <input id="importFile" type="file" accept=".json,application/json" hidden />
+        <button class="btn" id="printBtn" type="button">Imprimir / PDF</button>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <aside class="sidebar">
+        <section class="card profile-card">
+          <div class="eyebrow">3º rodízio do internato</div>
+          <h1>Controle pessoal da sua frequência.</h1>
+          <p class="lead">Layout novo, mais limpo e com visão em painel. Toque em cada turno para alternar entre pendente, presente e ausente. Os vistos e observações continuam sendo salvos automaticamente no navegador.</p>
+          <div class="info-stack">
+            <div class="info-chip"><span class="muted">Período</span><strong id="periodPill">03/08/2026 a 20/09/2026</strong></div>
+            <div class="info-chip"><span class="muted">Semanas</span><strong id="weeksCountPill">7 semanas</strong></div>
+            <div class="info-chip"><span class="muted">Turnos</span><strong id="turnsCountPill">0 turnos</strong></div>
+            <div class="info-chip"><span class="muted">Horas previstas</span><strong id="hoursCountPill">0h</strong></div>
+          </div>
+        </section>
+
+        <section class="card summary-card" aria-label="Resumo da frequência">
+          <div class="summary-title">Resumo do rodízio</div>
+          <div class="summary-grid">
+            <div class="metric"><strong id="presentHours">0h</strong><span>Horas presentes</span></div>
+            <div class="metric"><strong id="absentHours">0h</strong><span>Horas ausentes</span></div>
+            <div class="metric"><strong id="pendingHours">0h</strong><span>Horas pendentes</span></div>
+            <div class="metric"><strong id="signedCount">0/0</strong><span>Vistos recebidos</span></div>
+          </div>
+          <div class="progress-wrap">
+            <div class="small" id="progressText">0% dos turnos registrados</div>
+            <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+          </div>
+          <div class="summary-note" id="nextShift">Próxima atividade: carregando…</div>
+        </section>
+
+        <section class="card actions-card">
+          <div class="summary-title">Ações rápidas</div>
+          <div class="actions-grid">
+            <button class="btn primary" id="fullScheduleBtn" type="button">Ver escala completa</button>
+            <button class="btn ghost" id="todayPresentBtn" type="button">Marcar hoje presente</button>
+            <button class="btn ghost" id="todaySignedBtn" type="button">Marcar vistos de hoje</button>
+            <button class="btn danger" id="resetBtn" type="button">Zerar registros</button>
+          </div>
+        </section>
+
+        <section class="card legend-card" aria-label="Legenda">
+          <div class="summary-title">Legenda</div>
+          <div class="legend-list">
+            <span><i class="dot pending"></i>Pendente</span>
+            <span><i class="dot present"></i>Presente</span>
+            <span><i class="dot absent"></i>Ausente</span>
+            <span><i class="dot signed"></i>Visto recebido</span>
+          </div>
+          <div class="small">Clique no cartão do turno para alternar o estado. Use “Observação” para justificar faltas, repor atividades ou lembrar pendências.</div>
+        </section>
+      </aside>
+
+      <section class="content">
+        <section class="panel spotlight">
+          <div class="spotlight-main">
+            <div class="eyebrow">Painel do dia</div>
+            <h2 id="todayLabel">Hoje</h2>
+            <p id="todayStatus">Verificando sua escala…</p>
+            <div class="pill-row">
+              <span class="pill">Uso offline</span>
+              <span class="pill">Backup em JSON</span>
+              <span class="pill">Impressão em PDF</span>
+              <span class="pill">7 semanas organizadas</span>
+            </div>
+          </div>
+          <div class="focus-card">
+            <div class="focus-block">
+              <strong>Próxima atividade</strong>
+              <div id="nextShiftSpotlight">Carregando…</div>
+            </div>
+            <div class="focus-block">
+              <strong>Atalho</strong>
+              <div class="focus-actions">
+                <button class="btn primary" type="button" id="spotlightFullScheduleBtn">Alternar visualização</button>
+                <button class="btn" type="button" id="spotlightTodayPresentBtn">Hoje presente</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <nav class="week-nav" id="weekNav" aria-label="Navegação por semanas"></nav>
+        <div class="weeks-stack" id="weeksContainer"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      Escala pessoal de Carlos França — Grupo 2A / interno 2A-2.<br />
+      Os registros são salvos apenas neste navegador. Exporte um backup periodicamente.<br />
+      Versão 4.0 — layout novo em painel, mantendo a lógica de frequência, vistos e observações.
+    </footer>
+  </div>
+
+  <dialog id="notesDialog">
+    <div class="modal-head">
+      <div>
+        <strong id="notesTitle">Observação do turno</strong>
+        <div class="small" id="notesSubtitle"></div>
+      </div>
+      <button class="btn" id="closeNotesBtn" type="button">Fechar</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label for="notesText">Observação, justificativa ou pendência</label>
+        <textarea id="notesText" placeholder="Ex.: solicitar assinatura ao preceptor; repor atividade; anexar justificativa..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="clearNoteBtn" type="button">Limpar</button>
+      <button class="btn primary" id="saveNoteBtn" type="button">Salvar observação</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const schedule = [
+      {
+        week: 1, label: "Primeira semana", range: "03/08 a 09/08", plannedHours: 40,
+        days: [
+          { date: "2026-08-03", weekday: "Segunda", shifts: [
+            { id: "w1-d1-am", period: "Manhã", time: "07h–12h", activity: "Sala de Parto", hours: 5 },
+            { id: "w1-d1-pm", period: "Tarde", time: "13h–18h", activity: "Cardiologia Pediátrica", hours: 5 }
+          ]},
+          { date: "2026-08-04", weekday: "Terça", shifts: [
+            { id: "w1-d2-am", period: "Manhã", time: "07h–12h", activity: "Pneumologia Pediátrica", hours: 5 },
+            { id: "w1-d2-pm", period: "Tarde", time: "13h–18h", activity: "Pneumologia Pediátrica", hours: 5 }
+          ]},
+          { date: "2026-08-05", weekday: "Quarta", shifts: [] },
+          { date: "2026-08-06", weekday: "Quinta", shifts: [
+            { id: "w1-d4-am", period: "Manhã", time: "07h–12h", activity: "Pneumologia Pediátrica", hours: 5 }
+          ]},
+          { date: "2026-08-07", weekday: "Sexta", shifts: [
+            { id: "w1-d5-am", period: "Manhã", time: "07h–12h", activity: "Alergo-imunologia", hours: 5 },
+            { id: "w1-d5-pm", period: "Tarde", time: "13h–18h", activity: "Alergo-imunologia", hours: 5 }
+          ]},
+          { date: "2026-08-08", weekday: "Sábado", shifts: [] },
+          { date: "2026-08-09", weekday: "Domingo", shifts: [
+            { id: "w1-d7-am", period: "Manhã", time: "07h–12h", activity: "UCINCO", hours: 5 }
+          ]}
+        ]
+      },
+      {
+        week: 2, label: "Segunda semana", range: "10/08 a 16/08", plannedHours: 40,
+        days: [
+          { date: "2026-08-10", weekday: "Segunda", shifts: [
+            { id: "w2-d1-pm", period: "Tarde", time: "13h–18h", activity: "Cardiologia Pediátrica", hours: 5 }
+          ]},
+          { date: "2026-08-11", weekday: "Terça", shifts: [
+            { id: "w2-d2-am", period: "Manhã", time: "07h–12h", activity: "Pneumologia Pediátrica", hours: 5 },
+            { id: "w2-d2-pm", period: "Tarde", time: "13h–18h", activity: "Genética", hours: 5 }
+          ]},
+          { date: "2026-08-12", weekday: "Quarta", shifts: [] },
+          { date: "2026-08-13", weekday: "Quinta", shifts: [
+            { id: "w2-d4-am", period: "Manhã", time: "07h–12h", activity: "Pneumologia Pediátrica", hours: 5 }
+          ]},
+          { date: "2026-08-14", weekday: "Sexta", shifts: [
+            { id: "w2-d5-am", period: "Manhã", time: "07h–12h", activity: "Alergo-imunologia", hours: 5 },
+            { id: "w2-d5-pm", period: "Tarde", time: "13h–18h", activity: "Hematologia", hours: 5 }
+          ]},
+          { date: "2026-08-15", weekday: "Sábado", shifts: [] },
+          { date: "2026-08-16", weekday: "Domingo", shifts: [
+            { id: "w2-d7-am", period: "Manhã", time: "07h–12h", activity: "Sala de Parto", hours: 5 },
+            { id: "w2-d7-pm", period: "Tarde", time: "13h–18h", activity: "UCINCO", hours: 5 }
+          ]}
+        ]
+      },
+      {
+        week: 3, label: "Terceira semana", range: "17/08 a 23/08", plannedHours: 35,
+        days: [
+          { date: "2026-08-17", weekday: "Segunda", shifts: [
+            { id: "w3-d1-am", period: "Manhã", time: "07h–12h", activity: "Gastroenterologia Pediátrica", hours: 5 },
+            { id: "w3-d1-pm", period: "Tarde", time: "13h–18h", activity: "Cardiologia Pediátrica", hours: 5 }
+          ]},
+          { date: "2026-08-18", weekday: "Terça", shifts: [
+            { id: "w3-d2-am", period: "Manhã", time: "07h–12h", activity: "UCINCO", hours: 5 },
+            { id: "w3-d2-pm", period: "Tarde", time: "13h–18h", activity: "Genética", hours: 5 }
+          ]},
+          { date: "2026-08-19", weekday: "Quarta", shifts: [] },
+          { date: "2026-08-20", weekday: "Quinta", shifts: [
+            { id: "w3-d4-am", period: "Manhã", time: "07h–12h", activity: "Pneumologia Pediátrica", hours: 5 }
+          ]},
+          { date: "2026-08-21", weekday: "Sexta", shifts: [
+            { id: "w3-d5-am", period: "Manhã", time: "07h–12h", activity: "Alergo-imunologia", hours: 5 },
+            { id: "w3-d5-pm", period: "Tarde", time: "13h–18h", activity: "Hematologia", hours: 5 }
+          ]},
+          { date: "2026-08-22", weekday: "Sábado", shifts: [] },
+          { date: "2026-08-23", weekday: "Domingo", shifts: [] }
+        ]
+      },
+      {
+        week: 4, label: "Quarta semana", range: "24/08 a 30/08", plannedHours: 42,
+        days: [
+          { date: "2026-08-24", weekday: "Segunda", shifts: [
+            { id: "w4-d1-am", period: "Manhã", time: "07h–12h", activity: "Gastroenterologia Pediátrica", hours: 5 },
+            { id: "w4-d1-pm", period: "Tarde", time: "13h–18h", activity: "Cardiologia Pediátrica", hours: 5 }
+          ]},
+          { date: "2026-08-25", weekday: "Terça", shifts: [
+            { id: "w4-d2-am", period: "Manhã", time: "07h–12h", activity: "Pneumologia Pediátrica", hours: 5 },
+            { id: "w4-d2-pm", period: "Tarde", time: "13h–18h", activity: "Genética", hours: 5 }
+          ]},
+          { date: "2026-08-26", weekday: "Quarta", shifts: [] },
+          { date: "2026-08-27", weekday: "Quinta", shifts: [
+            { id: "w4-d4-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela", hours: 6 },
+            { id: "w4-d4-pm", period: "Tarde", time: "14h–18h", activity: "Pronto-Socorro e Sala Amarela", hours: 4 }
+          ]},
+          { date: "2026-08-28", weekday: "Sexta", shifts: [
+            { id: "w4-d5-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela", hours: 6 }
+          ]},
+          { date: "2026-08-29", weekday: "Sábado", shifts: [
+            { id: "w4-d6-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela", hours: 6 }
+          ]},
+          { date: "2026-08-30", weekday: "Domingo", shifts: [] }
+        ]
+      },
+      {
+        week: 5, label: "Quinta semana", range: "31/08 a 06/09", plannedHours: 40,
+        days: [
+          { date: "2026-08-31", weekday: "Segunda", shifts: [
+            { id: "w5-final-d1-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 },
+            { id: "w5-final-d1-pm", period: "Tarde", time: "14h–19h", activity: "Pronto-Socorro e Sala Amarela • Carlos + Diego", hours: 5 }
+          ]},
+          { date: "2026-09-01", weekday: "Terça", shifts: [
+            { id: "w5-final-d2-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 }
+          ]},
+          { date: "2026-09-02", weekday: "Quarta", shifts: [
+            { id: "w5-final-d3-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 },
+            { id: "w5-final-d3-pm", period: "Tarde", time: "14h–19h", activity: "Pronto-Socorro e Sala Amarela • Carlos + Fabrício", hours: 5 }
+          ]},
+          { date: "2026-09-03", weekday: "Quinta", shifts: [
+            { id: "w5-final-d4-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 }
+          ]},
+          { date: "2026-09-04", weekday: "Sexta", shifts: [
+            { id: "w5-final-d5-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 }
+          ]},
+          { date: "2026-09-05", weekday: "Sábado", shifts: [] },
+          { date: "2026-09-06", weekday: "Domingo", shifts: [] }
+        ]
+      },
+      {
+        week: 6, label: "Sexta semana", range: "07/09 a 13/09", plannedHours: 40,
+        days: [
+          { date: "2026-09-07", weekday: "Segunda", shifts: [
+            { id: "w6-final-d1-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 }
+          ]},
+          { date: "2026-09-08", weekday: "Terça", shifts: [
+            { id: "w6-final-d2-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 },
+            { id: "w6-final-d2-pm", period: "Tarde", time: "14h–19h", activity: "Pronto-Socorro e Sala Amarela • Carlos + Victor", hours: 5 }
+          ]},
+          { date: "2026-09-09", weekday: "Quarta", shifts: [
+            { id: "w6-final-d3-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 }
+          ]},
+          { date: "2026-09-10", weekday: "Quinta", shifts: [
+            { id: "w6-final-d4-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 },
+            { id: "w6-final-d4-pm", period: "Tarde", time: "14h–19h", activity: "Pronto-Socorro e Sala Amarela • Carlos + Fabrício", hours: 5 }
+          ]},
+          { date: "2026-09-11", weekday: "Sexta", shifts: [
+            { id: "w6-final-d5-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 }
+          ]},
+          { date: "2026-09-12", weekday: "Sábado", shifts: [] },
+          { date: "2026-09-13", weekday: "Domingo", shifts: [] }
+        ]
+      },
+      {
+        week: 7, label: "Sétima semana", range: "14/09 a 20/09", plannedHours: 40,
+        days: [
+          { date: "2026-09-14", weekday: "Segunda", shifts: [
+            { id: "w7-final-d1-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 },
+            { id: "w7-final-d1-pm", period: "Tarde", time: "14h–19h", activity: "Pronto-Socorro e Sala Amarela • Carlos + Victor", hours: 5 }
+          ]},
+          { date: "2026-09-15", weekday: "Terça", shifts: [
+            { id: "w7-final-d2-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 }
+          ]},
+          { date: "2026-09-16", weekday: "Quarta", shifts: [
+            { id: "w7-final-d3-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 },
+            { id: "w7-final-d3-pm", period: "Tarde", time: "14h–19h", activity: "Pronto-Socorro e Sala Amarela • Carlos + Diego", hours: 5 }
+          ]},
+          { date: "2026-09-17", weekday: "Quinta", shifts: [
+            { id: "w7-final-d4-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 }
+          ]},
+          { date: "2026-09-18", weekday: "Sexta", shifts: [
+            { id: "w7-final-d5-am", period: "Manhã", time: "07h–13h", activity: "Pronto-Socorro e Sala Amarela • Todos", hours: 6 }
+          ]},
+          { date: "2026-09-19", weekday: "Sábado", shifts: [] },
+          { date: "2026-09-20", weekday: "Domingo", shifts: [] }
+        ]
+      }
+    ];
+
+    const STORAGE_KEY = "escala_pediatria_carlos_2a_v4";
+    const THEME_KEY = "escala_pediatria_tema_v4";
+    const VIEW_KEY = "escala_pediatria_visualizacao_v4";
+    const statusOrder = ["pending", "present", "absent"];
+    const statusLabels = { pending: "Pendente", present: "Presente", absent: "Ausente" };
+
+    const allShifts = schedule.flatMap(w => w.days.flatMap(d => d.shifts.map(s => ({ ...s, date: d.date, weekday: d.weekday, week: w.week }))));
+    const totalPlannedHours = allShifts.reduce((sum, s) => sum + s.hours, 0);
+
+    let state = loadState();
+    let activeNoteShift = null;
+    let fullScheduleVisible = safeGet(VIEW_KEY) === "full";
+    let selectedWeek = getCurrentWeekNumber();
+
+    function safeGet(key) {
+      try { return localStorage.getItem(key); } catch { return null; }
+    }
+
+    function safeSet(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function getCurrentWeekNumber() {
+      const today = localISODate();
+      const found = schedule.find(w => w.days.some(d => d.date === today));
+      return found ? found.week : 1;
+    }
+
+    function blankRecord() {
+      const records = {};
+      allShifts.forEach(s => records[s.id] = { status: "pending", signed: false, note: "" });
+      return { records, updatedAt: new Date().toISOString() };
+    }
+
+    function loadState() {
+      try {
+        const parsed = JSON.parse(safeGet(STORAGE_KEY));
+        const base = blankRecord();
+        if (!parsed || typeof parsed !== "object") return base;
+        for (const id of Object.keys(base.records)) {
+          if (parsed.records && parsed.records[id]) {
+            const incoming = parsed.records[id];
+            base.records[id] = {
+              status: statusOrder.includes(incoming.status) ? incoming.status : "pending",
+              signed: Boolean(incoming.signed),
+              note: typeof incoming.note === "string" ? incoming.note : ""
+            };
+          }
+        }
+        base.updatedAt = parsed.updatedAt || base.updatedAt;
+        return base;
+      } catch {
+        return blankRecord();
+      }
+    }
+
+    function saveState(message = "") {
+      state.updatedAt = new Date().toISOString();
+      const saved = safeSet(STORAGE_KEY, JSON.stringify(state));
+      updateSummary();
+      if (message) showToast(saved ? message : `${message} Registro mantido apenas enquanto esta página permanecer aberta.`);
+    }
+
+    function formatDateBR(iso) {
+      const [y, m, d] = iso.split("-");
+      return `${d}/${m}`;
+    }
+
+    function formatLongDate(iso) {
+      const date = new Date(`${iso}T12:00:00`);
+      return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).format(date);
+    }
+
+    function localISODate(date = new Date()) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function initStaticMeta() {
+      const firstDay = schedule[0].days[0].date;
+      const lastDay = schedule.at(-1).days.at(-1).date;
+      document.getElementById("periodPill").textContent = `${formatDateBR(firstDay)}/2026 a ${formatDateBR(lastDay)}/2026`;
+      document.getElementById("weeksCountPill").textContent = `${schedule.length} semanas`;
+      document.getElementById("turnsCountPill").textContent = `${allShifts.length} turnos`;
+      document.getElementById("hoursCountPill").textContent = `${totalPlannedHours}h`;
+    }
+
+    function render() {
+      const nav = document.getElementById("weekNav");
+      const container = document.getElementById("weeksContainer");
+
+      nav.innerHTML = schedule.map(w => `
+        <button class="week-tab ${w.week === selectedWeek ? "active" : ""}" data-week-target="week-${w.week}" type="button">
+          ${w.week}ª semana
+        </button>
+      `).join("");
+
+      container.innerHTML = schedule.map(w => `
+        <section class="week-section" id="week-${w.week}">
+          <div class="panel week-panel">
+            <div class="week-head">
+              <div>
+                <div class="eyebrow">${w.range}</div>
+                <h3>${w.label}</h3>
+              </div>
+              <div class="week-total" id="week-total-${w.week}">${w.plannedHours}h previstas</div>
+            </div>
+            <div class="day-list">
+              ${w.days.map(day => renderDay(day)).join("")}
+            </div>
+          </div>
+        </section>
+      `).join("");
+
+      bindDynamicEvents();
+      applyViewMode(false);
+      markToday();
+      updateSummary();
+      updateWeekTabsOnScroll();
+    }
+
+    function renderDay(day) {
+      const planned = day.shifts.reduce((sum, s) => sum + s.hours, 0);
+      return `
+        <article class="day-row" data-date="${day.date}">
+          <div class="day-meta">
+            <div>
+              <div class="day-name">${day.weekday}</div>
+              <div class="day-badge">${formatDateBR(day.date)}</div>
+            </div>
+            <div class="day-hours">${planned ? `${planned}h previstas` : "Folga"}</div>
+          </div>
+          <div class="day-main">
+            ${day.shifts.length ? `
+              <div class="day-actions">
+                <button class="mini-btn" data-day-present="${day.date}" type="button">Dia presente</button>
+                <button class="mini-btn" data-day-signed="${day.date}" type="button">Vistos do dia</button>
+                <button class="mini-btn" data-day-reset="${day.date}" type="button">Limpar dia</button>
+              </div>
+              <div class="shift-grid">
+                ${day.shifts.map(shift => renderShift(shift)).join("")}
+              </div>
+            ` : `
+              <div class="free-day"><div><strong>Folga</strong>Sem atividade programada neste dia.</div></div>
+            `}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderShift(shift) {
+      const record = state.records[shift.id] || { status: "pending", signed: false, note: "" };
+      const noteMark = record.note ? " • anotação" : "";
+      return `
+        <div class="shift-card" data-shift-id="${shift.id}" data-status="${record.status}" tabindex="0" role="button" aria-label="${shift.period}, ${shift.activity}. Estado: ${statusLabels[record.status]}. Clique para alternar.">
+          <div class="shift-top">
+            <div>
+              <div class="shift-label">${shift.period}</div>
+              <div class="shift-place">${shift.activity}</div>
+            </div>
+            <div class="shift-time">${shift.time}<br>${shift.hours}h</div>
+          </div>
+          <div class="status-row">
+            <span class="status-badge ${record.status}">${statusLabels[record.status]}</span>
+            <label class="signature" title="Marcar assinatura recebida">
+              <input type="checkbox" data-signature="${shift.id}" ${record.signed ? "checked" : ""} />
+              Visto
+            </label>
+          </div>
+          <div class="shift-footer">
+            <button class="icon-btn" data-note="${shift.id}" type="button">Observação${noteMark}</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindDynamicEvents() {
+      document.querySelectorAll(".shift-card").forEach(card => {
+        card.addEventListener("click", event => {
+          if (event.target.closest("button, input, label")) return;
+          cycleStatus(card.dataset.shiftId);
+        });
+        card.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            cycleStatus(card.dataset.shiftId);
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-signature]").forEach(input => {
+        input.addEventListener("change", event => {
+          const id = event.target.dataset.signature;
+          state.records[id].signed = event.target.checked;
+          saveState(event.target.checked ? "Visto marcado." : "Visto desmarcado.");
+          refreshShift(id);
+        });
+      });
+
+      document.querySelectorAll("[data-note]").forEach(button => {
+        button.addEventListener("click", event => {
+          event.stopPropagation();
+          openNotes(button.dataset.note);
+        });
+      });
+
+      document.querySelectorAll("[data-day-present]").forEach(button => button.addEventListener("click", () => markDay(button.dataset.dayPresent, "present")));
+      document.querySelectorAll("[data-day-signed]").forEach(button => button.addEventListener("click", () => signDay(button.dataset.daySigned)));
+      document.querySelectorAll("[data-day-reset]").forEach(button => button.addEventListener("click", () => resetDay(button.dataset.dayReset)));
+
+      document.querySelectorAll(".week-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          selectedWeek = Number(tab.dataset.weekTarget.replace("week-", ""));
+          if (fullScheduleVisible) {
+            document.getElementById(tab.dataset.weekTarget).scrollIntoView({ behavior: "smooth", block: "start" });
+          } else {
+            applyViewMode(true);
+          }
+        });
+      });
+    }
+
+    function applyViewMode(scrollToWeek = false) {
+      const sections = [...document.querySelectorAll(".week-section")];
+      const tabs = [...document.querySelectorAll(".week-tab")];
+      const button = document.getElementById("fullScheduleBtn");
+      const altButton = document.getElementById("spotlightFullScheduleBtn");
+
+      sections.forEach(section => {
+        const weekNumber = Number(section.id.replace("week-", ""));
+        section.classList.toggle("is-hidden", !fullScheduleVisible && weekNumber !== selectedWeek);
+      });
+
+      tabs.forEach(tab => {
+        const weekNumber = Number(tab.dataset.weekTarget.replace("week-", ""));
+        tab.classList.toggle("active", weekNumber === selectedWeek);
+      });
+
+      const label = fullScheduleVisible ? "Ver uma semana por vez" : "Ver escala completa";
+      if (button) {
+        button.textContent = label;
+        button.setAttribute("aria-pressed", fullScheduleVisible ? "true" : "false");
+      }
+      if (altButton) {
+        altButton.textContent = fullScheduleVisible ? "Mostrar 1 semana" : "Mostrar tudo";
+      }
+
+      safeSet(VIEW_KEY, fullScheduleVisible ? "full" : "single");
+
+      if (scrollToWeek) {
+        const target = document.getElementById(`week-${selectedWeek}`);
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    function toggleFullSchedule() {
+      fullScheduleVisible = !fullScheduleVisible;
+      applyViewMode(true);
+      showToast(fullScheduleVisible ? "Escala completa ativada." : "Visualização por semana ativada.");
+    }
+
+    function cycleStatus(id) {
+      const current = state.records[id].status;
+      const next = statusOrder[(statusOrder.indexOf(current) + 1) % statusOrder.length];
+      state.records[id].status = next;
+      saveState(`Turno marcado como ${statusLabels[next].toLowerCase()}.`);
+      refreshShift(id);
+    }
+
+    function refreshShift(id) {
+      const old = document.querySelector(`[data-shift-id="${id}"]`);
+      if (!old) return;
+      const shift = allShifts.find(s => s.id === id);
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = renderShift(shift).trim();
+      const replacement = wrapper.firstElementChild;
+      old.replaceWith(replacement);
+
+      replacement.addEventListener("click", event => {
+        if (event.target.closest("button, input, label")) return;
+        cycleStatus(id);
+      });
+      replacement.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          cycleStatus(id);
+        }
+      });
+      replacement.querySelector(`[data-signature="${id}"]`).addEventListener("change", event => {
+        state.records[id].signed = event.target.checked;
+        saveState(event.target.checked ? "Visto marcado." : "Visto desmarcado.");
+        refreshShift(id);
+      });
+      replacement.querySelector(`[data-note="${id}"]`).addEventListener("click", event => {
+        event.stopPropagation();
+        openNotes(id);
+      });
+      updateDayCompletion(shift.date);
+    }
+
+    function shiftsForDate(date) {
+      return allShifts.filter(s => s.date === date);
+    }
+
+    function markDay(date, status) {
+      const shifts = shiftsForDate(date);
+      shifts.forEach(s => state.records[s.id].status = status);
+      saveState(status === "present" ? "Todos os turnos do dia foram marcados como presentes." : "Turnos do dia atualizados.");
+      shifts.forEach(s => refreshShift(s.id));
+    }
+
+    function signDay(date) {
+      const shifts = shiftsForDate(date);
+      const shouldSign = shifts.some(s => !state.records[s.id].signed);
+      shifts.forEach(s => state.records[s.id].signed = shouldSign);
+      saveState(shouldSign ? "Vistos do dia marcados." : "Vistos do dia desmarcados.");
+      shifts.forEach(s => refreshShift(s.id));
+    }
+
+    function resetDay(date) {
+      if (!confirm(`Limpar os registros de ${formatLongDate(date)}?`)) return;
+      const shifts = shiftsForDate(date);
+      shifts.forEach(s => state.records[s.id] = { status: "pending", signed: false, note: "" });
+      saveState("Registros do dia limpos.");
+      shifts.forEach(s => refreshShift(s.id));
+    }
+
+    function updateDayCompletion(date) {
+      const dayCard = document.querySelector(`[data-date="${date}"]`);
+      const shifts = shiftsForDate(date);
+      if (!dayCard || !shifts.length) return;
+      const complete = shifts.every(s => state.records[s.id].status !== "pending" && state.records[s.id].signed);
+      dayCard.classList.toggle("complete", complete);
+    }
+
+    function updateSummary() {
+      let present = 0, absent = 0, pending = 0, signed = 0, registered = 0;
+      allShifts.forEach(s => {
+        const record = state.records[s.id];
+        if (record.status === "present") { present += s.hours; registered++; }
+        else if (record.status === "absent") { absent += s.hours; registered++; }
+        else pending += s.hours;
+        if (record.signed) signed++;
+      });
+
+      document.getElementById("presentHours").textContent = `${present}h`;
+      document.getElementById("absentHours").textContent = `${absent}h`;
+      document.getElementById("pendingHours").textContent = `${pending}h`;
+      document.getElementById("signedCount").textContent = `${signed}/${allShifts.length}`;
+
+      const pct = allShifts.length ? Math.round((registered / allShifts.length) * 100) : 0;
+      document.getElementById("progressText").textContent = `${pct}% dos turnos registrados`;
+      document.getElementById("progressBar").style.width = `${pct}%`;
+
+      schedule.forEach(w => {
+        const weekShifts = w.days.flatMap(d => d.shifts);
+        const p = weekShifts.filter(s => state.records[s.id].status === "present").reduce((sum, s) => sum + s.hours, 0);
+        const a = weekShifts.filter(s => state.records[s.id].status === "absent").reduce((sum, s) => sum + s.hours, 0);
+        const el = document.getElementById(`week-total-${w.week}`);
+        if (el) el.textContent = `${w.plannedHours}h previstas • ${p}h presentes${a ? ` • ${a}h ausentes` : ""}`;
+      });
+
+      schedule.flatMap(w => w.days).forEach(d => updateDayCompletion(d.date));
+      updateTodayAndNext();
+    }
+
+    function updateTodayAndNext() {
+      const today = localISODate();
+      const todayShifts = shiftsForDate(today);
+      const todayLabel = document.getElementById("todayLabel");
+      const todayStatus = document.getElementById("todayStatus");
+      const presentBtn = document.getElementById("todayPresentBtn");
+      const signedBtn = document.getElementById("todaySignedBtn");
+
+      todayLabel.textContent = `Hoje, ${formatDateBR(today)}`;
+      if (todayShifts.length) {
+        const pendingCount = todayShifts.filter(s => state.records[s.id].status === "pending").length;
+        todayStatus.textContent = `${todayShifts.length} turno(s) na escala • ${pendingCount} pendente(s)`;
+        presentBtn.disabled = false;
+        signedBtn.disabled = false;
+      } else {
+        const isWithin = today >= schedule[0].days[0].date && today <= schedule.at(-1).days.at(-1).date;
+        todayStatus.textContent = isWithin ? "Dia de folga." : "Data fora do período do rodízio.";
+        presentBtn.disabled = true;
+        signedBtn.disabled = true;
+      }
+
+      const now = new Date();
+      const upcoming = allShifts
+        .map(s => {
+          const startHour = Number(s.time.slice(0, 2));
+          const start = new Date(`${s.date}T${String(startHour).padStart(2, "0")}:00:00`);
+          return { ...s, start };
+        })
+        .filter(s => s.start >= now && state.records[s.id].status === "pending")
+        .sort((a, b) => a.start - b.start)[0];
+
+      const text = upcoming
+        ? `Próxima atividade pendente: ${upcoming.weekday}, ${formatDateBR(upcoming.date)}, ${upcoming.period.toLowerCase()} — ${upcoming.activity}.`
+        : "Não há atividades futuras pendentes no período desta escala.";
+
+      document.getElementById("nextShift").textContent = text;
+      document.getElementById("nextShiftSpotlight").textContent = text.replace("Próxima atividade pendente: ", "");
+    }
+
+    function markToday() {
+      const today = localISODate();
+      const card = document.querySelector(`[data-date="${today}"]`);
+      if (card) card.classList.add("today");
+    }
+
+    function openNotes(id) {
+      activeNoteShift = id;
+      const shift = allShifts.find(s => s.id === id);
+      document.getElementById("notesTitle").textContent = `${shift.period} — ${shift.activity}`;
+      document.getElementById("notesSubtitle").textContent = `${shift.weekday}, ${formatLongDate(shift.date)} • ${shift.time}`;
+      document.getElementById("notesText").value = state.records[id].note || "";
+      const dialog = document.getElementById("notesDialog");
+      if (typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.setAttribute("open", "");
+      setTimeout(() => document.getElementById("notesText").focus(), 40);
+    }
+
+    function closeNotes() {
+      const dialog = document.getElementById("notesDialog");
+      if (typeof dialog.close === "function") dialog.close();
+      else dialog.removeAttribute("open");
+      activeNoteShift = null;
+    }
+
+    function saveNote() {
+      if (!activeNoteShift) return;
+      state.records[activeNoteShift].note = document.getElementById("notesText").value.trim();
+      const id = activeNoteShift;
+      saveState("Observação salva.");
+      closeNotes();
+      refreshShift(id);
+    }
+
+    function exportBackup() {
+      const payload = {
+        app: "Minha Escala de Pediatria",
+        person: "Carlos França",
+        group: "2A / 2A-2",
+        period: `${schedule[0].days[0].date} a ${schedule.at(-1).days.at(-1).date}`,
+        totalPlannedHours,
+        exportedAt: new Date().toISOString(),
+        state
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `backup_escala_pediatria_${localISODate()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Backup exportado.");
+    }
+
+    function importBackup(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          const incoming = parsed.state || parsed;
+          if (!incoming.records) throw new Error("Formato inválido");
+          const fresh = blankRecord();
+          Object.keys(fresh.records).forEach(id => {
+            if (incoming.records[id]) {
+              fresh.records[id] = {
+                status: statusOrder.includes(incoming.records[id].status) ? incoming.records[id].status : "pending",
+                signed: Boolean(incoming.records[id].signed),
+                note: typeof incoming.records[id].note === "string" ? incoming.records[id].note : ""
+              };
+            }
+          });
+          state = fresh;
+          saveState("Backup importado com sucesso.");
+          render();
+        } catch {
+          alert("Não foi possível importar o arquivo. Verifique se ele é um backup válido deste app.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetAll() {
+      if (!confirm("Zerar todos os registros de presença, ausência, vistos e observações? Esta ação não pode ser desfeita sem um backup.")) return;
+      state = blankRecord();
+      saveState("Todos os registros foram zerados.");
+      render();
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme === "black" ? "" : theme;
+      document.getElementById("themeSelect").value = theme;
+      safeSet(THEME_KEY, theme);
+      const colors = { black: "#0b1220", mono: "#f5f6f8", pastel: "#f7f4ff" };
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", colors[theme] || colors.black);
+    }
+
+    function updateWeekTabsOnScroll() {
+      if (!("IntersectionObserver" in window)) return;
+      const sections = [...document.querySelectorAll(".week-section")];
+      const tabs = [...document.querySelectorAll(".week-tab")];
+      const observer = new IntersectionObserver(entries => {
+        if (!fullScheduleVisible) return;
+        const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        selectedWeek = Number(visible.target.id.replace("week-", ""));
+        tabs.forEach(t => t.classList.toggle("active", t.dataset.weekTarget === visible.target.id));
+      }, { rootMargin: "-20% 0px -65% 0px", threshold: [0, .1, .5] });
+      sections.forEach(s => observer.observe(s));
+    }
+
+    let toastTimer;
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    document.getElementById("fullScheduleBtn").addEventListener("click", toggleFullSchedule);
+    document.getElementById("spotlightFullScheduleBtn").addEventListener("click", toggleFullSchedule);
+    document.getElementById("spotlightTodayPresentBtn").addEventListener("click", () => markDay(localISODate(), "present"));
+    document.getElementById("themeSelect").addEventListener("change", e => applyTheme(e.target.value));
+    document.getElementById("exportBtn").addEventListener("click", exportBackup);
+    document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
+    document.getElementById("importFile").addEventListener("change", e => {
+      if (e.target.files[0]) importBackup(e.target.files[0]);
+      e.target.value = "";
+    });
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+    document.getElementById("resetBtn").addEventListener("click", resetAll);
+    document.getElementById("todayPresentBtn").addEventListener("click", () => markDay(localISODate(), "present"));
+    document.getElementById("todaySignedBtn").addEventListener("click", () => signDay(localISODate()));
+    document.getElementById("closeNotesBtn").addEventListener("click", closeNotes);
+    document.getElementById("saveNoteBtn").addEventListener("click", saveNote);
+    document.getElementById("clearNoteBtn").addEventListener("click", () => document.getElementById("notesText").value = "");
+    document.getElementById("notesDialog").addEventListener("click", event => {
+      const dialog = event.currentTarget;
+      const rect = dialog.getBoundingClientRect();
+      const outside = event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom;
+      if (outside) closeNotes();
+    });
+
+    applyTheme(safeGet(THEME_KEY) || "black");
+    initStaticMeta();
+    render();
+  </script>
+</body>
+</html>
